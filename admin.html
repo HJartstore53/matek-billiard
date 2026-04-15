@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Playfair+Display:wght@500&display=swap" rel="stylesheet">
+
+<style>
+
+/* 🌍 RESET */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Playfair Display', serif;
+}
+
+/* 🌈 BODY */
+body {
+  display: flex;
+  min-height: 100vh;
+  background: #f5f7fb;
+  color: #1e293b;
+}
+
+/* 🧭 SIDEBAR */
+.sidebar {
+  width: 230px;
+  background: #111827;
+  color: #fff;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar h2 {
+  margin-bottom: 25px;
+  color: #38bdf8;
+}
+
+.sidebar a {
+  padding: 12px;
+  margin-bottom: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #cbd5e1;
+  transition: 0.3s;
+}
+
+.sidebar a:hover {
+  background: #1f2937;
+  color: #38bdf8;
+}
+
+.logout-btn {
+  margin-top: auto;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  background: #ef4444;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* 📦 MAIN */
+.main {
+  flex: 1;
+  padding: 30px;
+}
+
+/* 📊 CARD */
+.card {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.05);
+}
+
+/* 📈 STATS */
+.stats {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.stat {
+  flex: 1;
+  min-width: 150px;
+  background: #f1f5f9;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+  font-weight: bold;
+}
+
+/* 📝 FORM */
+.form-group {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+input {
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+/* 🖼 PREVIEW */
+#preview {
+  margin-top: 10px;
+  width: 120px;
+  border-radius: 8px;
+}
+
+/* 🔘 BUTTON */
+button {
+  background: #38bdf8;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  color: white;
+  font-weight: bold;
+}
+
+button:hover {
+  background: #0ea5e9;
+}
+
+/* 🧱 GRID */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 20px;
+}
+
+/* 🛍 PRODUCT CARD */
+.admin-card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 15px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.admin-img {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.admin-card input {
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.actions button {
+  flex: 1;
+}
+
+.delete {
+  background: #ef4444;
+}
+
+.delete:hover {
+  background: #dc2626;
+}
+
+/* 📱 MOBILE */
+@media (max-width: 768px) {
+  body {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+
+  .main {
+    padding: 15px;
+  }
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="sidebar">
+  <h2>👑 Admin</h2>
+  <a onclick="showSection('dashboard')">Dashboard</a>
+  <a onclick="showSection('products')">Products</a>
+  <button onclick="logout()" class="logout-btn">Logout</button>
+</div>
+
+<div class="main">
+
+  <!-- DASHBOARD -->
+  <div id="dashboard" class="card">
+  <h2>Dashboard</h2>
+
+  <div class="stats">
+    <div class="stat">Products: <span id="totalProducts">0</span></div>
+    <div class="stat">Orders: <span id="totalOrders">0</span></div>
+    <div class="stat">Revenue: ₹<span id="totalRevenue">0</span></div>
+  </div>
+
+</div>
+
+  <!-- PRODUCTS -->
+  <div id="products" class="card">
+    <h2>Add Product</h2>
+
+    <div class="form-group">
+      <input id="pname" placeholder="Name">
+      <input id="pprice" placeholder="Price">
+      <input id="pimage" placeholder="Image URL">
+    </div>
+
+    <img id="preview">
+
+    <button onclick="addProduct()">Add Product</button>
+
+    <h2>Manage Products</h2>
+    <div class="grid" id="products-admin"></div>
+  </div>
+
+</div>
+
+<!-- FIREBASE -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+<script>
+
+const firebaseConfig = {
+    apiKey: "AIzaSyC6Xjlqg3wpqosotpZyPARYSzQwKLPYk_k",
+    authDomain: "matek-billiards.firebaseapp.com",
+    projectId: "matek-billiards",
+    storageBucket: "matek-billiards.firebasestorage.app",
+    messagingSenderId: "357506490776",
+    appId: "1:357506490776:web:63c45761a18c015a750bed",
+    measurementId: "G-QSD9334RPG"
+  };
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+const ADMIN_EMAIL = "matekbilliards@gmail.com";
+
+/* AUTH */
+firebase.auth().onAuthStateChanged(user => {
+
+  if (!user) {
+    window.location.href = "login.html";
+    return;
+  }
+
+  if (user.email !== ADMIN_EMAIL) {
+    alert("Access Denied ❌");
+    window.location.href = "index.html";
+    return;
+  }
+
+  loadProducts();
+  loadDashboardStats(); // ✅ FIXED
+
+});
+
+/* DASHBOARD COUNT */
+function loadDashboardStats() {
+
+  db.collection("products")
+    .onSnapshot(snapshot => {
+      document.getElementById("totalProducts").innerText = snapshot.size;
+    });
+
+}
+
+/* IMAGE PREVIEW */
+document.getElementById("pimage").oninput = function() {
+  document.getElementById("preview").src = this.value;
+};
+
+/* ADD PRODUCT */
+function addProduct() {
+
+  let name = pname.value;
+  let price = pprice.value;
+  let image = pimage.value;
+
+  if (!name || !price || !image) {
+    alert("Fill all fields ❌");
+    return;
+  }
+
+  db.collection("products").add({
+    name,
+    price,
+    image,
+    createdAt: new Date()
+  }).then(() => {
+    alert("Product Added ✅");
+
+    pname.value = "";
+    pprice.value = "";
+    pimage.value = "";
+    preview.src = "";
+
+  });
+
+}
+
+/* LOAD PRODUCTS */
+function loadProducts() {
+
+  const container = document.getElementById("products-admin");
+
+  db.collection("products")
+    .orderBy("createdAt", "desc")
+    .onSnapshot(snapshot => {
+
+      container.innerHTML = "";
+
+      snapshot.forEach(doc => {
+
+        let p = doc.data();
+        let id = doc.id;
+
+        container.innerHTML += `
+          <div class="admin-card">
+
+            <img src="${p.image}" class="admin-img">
+
+            <input value="${p.name}" id="name-${id}">
+            <input value="${p.price}" id="price-${id}">
+
+            <div class="actions">
+              <button onclick="updateProduct('${id}')">Update ✏️</button>
+              <button class="delete" onclick="deleteProduct('${id}')">Delete ❌</button>
+            </div>
+
+          </div>
+        `;
+
+      });
+
+    });
+
+}
+
+/* UPDATE */
+function updateProduct(id) {
+
+  db.collection("products").doc(id).update({
+    name: document.getElementById(`name-${id}`).value,
+    price: document.getElementById(`price-${id}`).value
+  });
+
+}
+
+/* DELETE */
+function deleteProduct(id) {
+
+  if (!confirm("Delete this product?")) return;
+
+  db.collection("products").doc(id).delete();
+
+}
+
+/* NAV */
+function showSection(section) {
+  dashboard.style.display = "none";
+  products.style.display = "none";
+  document.getElementById(section).style.display = "block";
+}
+
+/* LOGOUT */
+function logout() {
+  firebase.auth().signOut().then(() => {
+    window.location.href = "login.html";
+  });
+}
+
+function loadRevenueStats() {
+
+  db.collection("orders")
+    .onSnapshot(snapshot => {
+
+      let totalRevenue = 0;
+      let totalOrders = snapshot.size;
+
+      snapshot.forEach(doc => {
+
+        let order = doc.data();
+
+        if (order.total) {
+          totalRevenue += Number(order.total);
+        }
+
+      });
+
+      document.getElementById("totalOrders").innerText = totalOrders;
+      document.getElementById("totalRevenue").innerText = totalRevenue;
+
+    }, error => {
+      console.error("Revenue Error:", error);
+    });
+
+}
+
+function loadRevenueStats() {
+
+  db.collection("orders")
+    .onSnapshot(snapshot => {
+
+      let totalRevenue = 0;
+      let totalOrders = snapshot.size;
+
+      snapshot.forEach(doc => {
+
+        let order = doc.data();
+
+        if (order.total) {
+          totalRevenue += Number(order.total);
+        }
+
+      });
+
+      document.getElementById("totalOrders").innerText = totalOrders;
+      document.getElementById("totalRevenue").innerText = totalRevenue;
+
+    }, error => {
+      console.error("Revenue Error:", error);
+    });
+
+}
+</script>
+
+</body>
+</html>

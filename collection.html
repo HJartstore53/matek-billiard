@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Collection</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500&family=Playfair+Display:wght@500&display=swap" rel="stylesheet"> 
+ <link rel="stylesheet" href="style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+</head>
+
+<body>
+<div class="main-container">
+<button onclick="goHome()" class="back-btn">
+  ⬅ Back to Home
+</button>
+<h1>Our Collection</h1>
+
+<div class="collection-gallery" id="gallery"></div></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+
+<script>
+    
+ const firebaseConfig = {
+    apiKey: "AIzaSyC6Xjlqg3wpqosotpZyPARYSzQwKLPYk_k",
+    authDomain: "matek-billiards.firebaseapp.com",
+    projectId: "matek-billiards",
+    storageBucket: "matek-billiards.firebasestorage.app",
+    messagingSenderId: "357506490776",
+    appId: "1:357506490776:web:63c45761a18c015a750bed",
+    measurementId: "G-QSD9334RPG"
+  };
+
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+
+loadProducts();
+//---------------------------------------------------//
+
+ function loadProducts() {
+
+  const gallery = document.getElementById("gallery");
+
+  db.collection("products")
+    .orderBy("createdAt", "desc")
+    .onSnapshot(snapshot => {
+
+      gallery.innerHTML = "";
+
+      snapshot.forEach(doc => {
+
+        let p = doc.data();
+
+        gallery.innerHTML += `
+          <div class="item">
+            <img src="${p.image}">
+            <h3>${p.name}</h3>
+            <p class="price">₹${p.price}</p>
+
+            <button class="add-cart-btn" data-id="${doc.id}">
+              Add to Cart 🛒
+            </button>
+          </div>
+        `;
+
+      });
+
+      // 🔥 THIS IS AFTER RENDERING
+      document.querySelectorAll(".add-cart-btn").forEach(btn => {
+        btn.onclick = () => {
+          addToCart(btn.dataset.id);
+        };
+      });
+
+    }, error => {
+      console.error("Realtime error:", error);
+    });
+
+}
+//------------------------------------------------------------------------------//
+function addToCart(id) {
+
+  const user = firebase.auth().currentUser;
+
+
+  db.collection("products").doc(id).get().then(doc => {
+
+    if (!doc.exists) {
+      alert("Product not found ❌");
+      return;
+    }
+
+    let p = doc.data();
+
+    const cartRef = db.collection("carts").doc(user.uid);
+
+    cartRef.get().then(cartDoc => {
+
+      let cart = cartDoc.exists ? cartDoc.data().items : [];
+
+      // 🔥 IMPORTANT: ensure array exists
+      if (!cart) cart = [];
+
+      let existing = cart.find(item => item.id === id);
+
+      if (existing) {
+        existing.quantity = (existing.quantity || 1) + 1;
+      } else {
+        cart.push({
+          id: id,
+          name: p.name,
+          price: Number(p.price), // 🔥 FIXED
+          image: p.image,
+          quantity: 1
+        });
+      }
+
+      cartRef.set({ items: cart }).then(() => {
+        alert("Added to cart 🛒");
+        loadCart(); // 🔥 refresh instantly
+      });
+
+    });
+
+  }).catch(err => {
+    console.error("Error:", err);
+  });
+
+}
+  function goHome() {
+    window.location.href = "index.html";
+  }
+
+</script>
+<script>
+firebase.auth().onAuthStateChanged(user => {
+  if (!user) {
+    window.location.href = "login.html";
+  } else {
+    console.log("User logged in:", user.uid);
+  }
+});
+</script>
+
+
+<br><br><br><br>
+<footer class="footer">
+
+  <div class="footer-top">
+    <h2 class="footer-logo">MATEK BILLIARDS</h2>
+    <p class="footer-tag">Timeless Craftsmanship</p>
+  </div>
+
+  <div class="footer-links">
+    <a href="index.html">Home</a>
+<a href="collection.html">Collection</a>
+<a href="#" onclick="toggleCart()">Cart</a>
+    <a href="orders.html">Orders</a>
+  </div>
+
+  <div class="footer-contact">
+    <p>Email: matekbilliards@gmail.com</p>
+    <p>
+  Instagram: 
+  <a href="https://www.instagram.com/matek_billiards?igsh=MnAxcDVqdTV2ZGk3" target="_blank" class="insta-link">
+    📸 @matek_billiards
+  </a>
+</p>
+    <p>India • Luxury Timepieces</p>
+  </div>
+
+  <div class="footer-bottom">
+    <p>© 2026 MATEK BILLIARDS. All rights reserved.</p>
+  </div>
+
+</footer>
+</body>
+</html>

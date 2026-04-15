@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>My Orders</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display&display=swap" rel="stylesheet">
+ <link rel="stylesheet" href="style.css">
+
+
+
+</head>
+
+<body>
+
+<button onclick="goHome()" class="back-btn">⬅ Back to Home</button>
+
+<div class="container">
+  <h1>My Orders 📦</h1>
+  <div id="orders"></div>
+</div>
+
+<!-- FIREBASE -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+<script>
+
+const firebaseConfig = {
+  apiKey: "AIzaSyC6Xjlqg3wpqosotpZyPARYSzQwKLPYk_k",
+  authDomain: "matek-billiards.firebaseapp.com",
+  projectId: "matek-billiards",
+  storageBucket: "matek-billiards.firebasestorage.app",
+  messagingSenderId: "357506490776",
+  appId: "1:357506490776:web:63c45761a18c015a750bed"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+/* 🔐 AUTH FIX (NO LOOP LOGIN) */
+firebase.auth().onAuthStateChanged(user => {
+
+  if (user) {
+    loadOrders(user.uid);
+  } else {
+    setTimeout(() => {
+      if (!firebase.auth().currentUser) {
+        window.location.href = "login.html";
+      }
+    }, 800);
+  }
+
+});
+
+/* 📦 LOAD ORDERS */
+function loadOrders(uid) {
+
+  db.collection("orders")
+    .where("userId", "==", uid)
+    .orderBy("createdAt", "desc")
+    .onSnapshot(snapshot => {
+
+      const container = document.getElementById("orders");
+      container.innerHTML = "";
+
+      if (snapshot.empty) {
+        container.innerHTML = "<p>No orders yet 😔</p>";
+        return;
+      }
+
+      snapshot.forEach(doc => {
+
+        let order = doc.data();
+
+        let itemsHTML = "";
+
+        order.items.forEach(item => {
+          itemsHTML += `
+            <div class="item">
+              <img src="${item.image || ''}">
+              <div>
+                <div>${item.name}</div>
+                <div>₹${item.price} x ${item.quantity || 1}</div>
+              </div>
+            </div>
+          `;
+        });
+
+        let statusClass = order.status === "Delivered" ? "delivered" : "pending";
+
+        container.innerHTML += `
+          <div class="order-card">
+
+            <p>🕒 ${new Date(order.createdAt.seconds * 1000).toLocaleString()}</p>
+
+            <div class="order-items">
+              ${itemsHTML}
+            </div>
+
+            <div class="status ${statusClass}">
+              Status: ${order.status || "Pending"}
+            </div>
+
+            <div class="total">
+              Total: ₹${order.total}
+            </div>
+
+            <button class="invoice-btn" onclick='downloadInvoice(${JSON.stringify(order)})'>
+              Download Invoice 📄
+            </button>
+
+          </div>
+        `;
+
+      });
+
+    });
+
+}
+
+/* 📄 INVOICE */
+async function downloadInvoice(orderId) {
+
+  const { jsPDF } = window.jspdf;
+
+  let docSnap = await db.collection("orders").doc(orderId).get();
+  let order = docSnap.data();
+
+  const pdf = new jsPDF();
+  const logo = "logo.jpeg"; // 👈 replace
+
+pdf.addImage(logo, "PNG", 150, 10, 40, 20);
+
+  /* 🏷 HEADER */
+  pdf.setFontSize(18);
+  pdf.text("MATEK BILLIARDS", 14, 20);
+
+  pdf.setFontSize(10);
+  pdf.text("GST Invoice", 14, 26);
+
+  pdf.text("Order ID: " + orderId, 140, 20);
+  pdf.text("Date: " + new Date(order.createdAt.seconds * 1000).toLocaleString(), 140, 26);
+
+  /* 👤 CUSTOMER */
+  pdf.text("Customer:", 14, 40);
+  pdf.text(order.name || "Customer Name", 14, 46);
+  pdf.text(order.phone || "Phone Number", 14, 52);
+  pdf.text(order.address || "Address", 14, 58);
+
+  /* 📦 PRODUCTS TABLE */
+  let tableData = [];
+
+  order.items.forEach(item => {
+    tableData.push([
+      item.name,
+      item.quantity || 1,
+      "₹" + item.price,
+      "₹" + (parseInt(item.price) * (item.quantity || 1))
+    ]);
+  });
+
+  pdf.autoTable({
+    startY: 70,
+    head: [["Product", "Qty", "Price", "Total"]],
+    body: tableData,
+  });
+
+  /* 💰 TOTAL */
+  let finalY = pdf.lastAutoTable.finalY + 10;
+
+  pdf.text("Subtotal: ₹" + order.total, 140, finalY);
+  pdf.text("GST (0%): ₹0", 140, finalY + 6);
+  pdf.text("Total: ₹" + order.total, 140, finalY + 12);
+
+  /* 🧾 FOOTER */
+  pdf.text("Thank you for your purchase!", 14, finalY + 25);
+
+  pdf.save("Invoice_" + orderId + ".pdf");
+}
+
+/* 🔙 HOME */
+function goHome() {
+  window.location.href = "index.html";
+}
+
+</script>
+
+
+<br><br><br><br>
+<footer class="footer">
+
+  <div class="footer-top">
+    <h2 class="footer-logo">MATEK BILLIARDS</h2>
+    <p class="footer-tag">Timeless Craftsmanship</p>
+  </div>
+
+  <div class="footer-links">
+    <a href="index.html">Home</a>
+<a href="collection.html">Collection</a>
+<a href="#" onclick="toggleCart()">Cart</a>
+    <a href="orders.html">Orders</a>
+  </div>
+
+  <div class="footer-contact">
+    <p>Email: matekbilliards@gmail.com</p>
+    <p>
+  Instagram: 
+  <a href="https://www.instagram.com/matek_billiards?igsh=MnAxcDVqdTV2ZGk3" target="_blank" class="insta-link">
+    📸 @matek_billiards
+  </a>
+</p>
+    <p>India • Luxury Timepieces</p>
+  </div>
+
+  <div class="footer-bottom">
+    <p>© 2026 MATEK BILLIARDS. All rights reserved.</p>
+  </div>
+
+</footer>
+</body>
+</html>

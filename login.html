@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Login</title>
+    <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500&family=Playfair+Display:wght@500&display=swap" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+</head>
+
+<body class="login-body">
+
+<div class="login-container">
+  <h1 class="brand">MATEK BILLIARDS</h1>
+  <p class="tagline">Luxury Timepieces</p>
+
+  <div class="login-box">
+    <h2>Welcome Back 👑</h2>
+
+    <input id="email" placeholder="Email">
+    <input id="password" type="password" placeholder="Password">
+
+    <button onclick="login()" class="btn gold">Login</button>
+    <button onclick="signup()" class="btn outline">Create Account</button>
+  </div>
+</div>
+
+
+
+<!-- FIREBASE (COMPAT VERSION ONLY) -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyC6Xjlqg3wpqosotpZyPARYSzQwKLPYk_k",
+    authDomain: "matek-billiards.firebaseapp.com",
+    projectId: "matek-billiards",
+    storageBucket: "matek-billiards.firebasestorage.app",
+    messagingSenderId: "357506490776",
+    appId: "1:357506490776:web:63c45761a18c015a750bed",
+    measurementId: "G-QSD9334RPG"
+  };
+
+// ✅ IMPORTANT
+firebase.initializeApp(firebaseConfig);
+</script>
+<script>
+const ADMIN_EMAIL = "matekbilliards@gmail.com";
+
+// LOGIN FUNCTION
+
+function login() {
+
+  let email = document.getElementById("email").value;
+  let pass = document.getElementById("password").value;
+
+  firebase.auth().signInWithEmailAndPassword(email, pass)
+    .then((userCredential) => {
+
+      let user = userCredential.user;
+
+      if (user.email === ADMIN_EMAIL) {
+        window.location.href = "admin.html";
+      } else {
+        window.location.href = "index.html";
+      }
+
+    })
+    .catch(error => {
+      alert(error.message);
+    });
+
+}
+
+// AUTO REDIRECT (IF ALREADY LOGGED IN)
+function signup() {
+
+  let email = document.getElementById("email").value;
+  let pass = document.getElementById("password").value;
+
+  if (!email || !pass) {
+    alert("Enter email & password ❌");
+    return;
+  }
+
+  firebase.auth().createUserWithEmailAndPassword(email, pass)
+    .then(() => {
+      alert("Account created ✅");
+
+      // optional auto login redirect
+      window.location.href = "index.html";
+    })
+    .catch(error => {
+      alert(error.message);
+      console.error(error);
+    });
+
+}
+
+</script>
+</body>
+</html>

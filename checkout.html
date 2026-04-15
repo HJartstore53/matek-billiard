@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Checkout</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500&family=Playfair+Display:wght@500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<style>
+  /* =========================
+   CHECKOUT PAGE (ROYAL)
+========================= */
+
+body {
+  background: linear-gradient(160deg, #2b0b0b, #4a0f0f);
+  color: #f5e6c8;
+  font-family: 'Playfair Display', serif;
+}
+
+/* TITLE */
+h1 {
+  color: #D4AF37;
+  letter-spacing: 2px;
+  margin-top: 30px;
+}
+
+/* BOX */
+.checkout-box {
+  max-width: 420px;
+  margin: 50px auto;
+  padding: 25px;
+
+  background: rgba(255, 215, 0, 0.05);
+  border: 1px solid rgba(212,175,55,0.3);
+  border-radius: 12px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+
+  box-shadow: 0 0 20px rgba(0,0,0,0.5);
+}
+
+/* INPUTS */
+.checkout-box input {
+  padding: 12px;
+  border: 1px solid rgba(212,175,55,0.4);
+  background: transparent;
+  color: #f5e6c8;
+
+  border-radius: 6px;
+  outline: none;
+  transition: 0.3s;
+}
+
+.checkout-box input::placeholder {
+  color: rgba(245, 230, 200, 0.6);
+}
+
+/* INPUT FOCUS */
+.checkout-box input:focus {
+  border-color: #D4AF37;
+  box-shadow: 0 0 5px rgba(212,175,55,0.5);
+}
+
+/* BUTTON */
+.checkout-box button {
+  padding: 12px;
+  background: linear-gradient(90deg, #D4AF37, #f1c40f);
+  color: #2b0b0b;
+
+  border: none;
+  border-radius: 8px;
+
+  font-weight: bold;
+  letter-spacing: 1px;
+
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+/* BUTTON HOVER */
+.checkout-box button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 10px rgba(212,175,55,0.6);
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+@media (max-width: 500px) {
+  .checkout-box {
+    margin: 30px 15px;
+    padding: 20px;
+  }
+}
+
+</style>
+
+<body>
+
+<h1 style="text-align:center;">Secure Checkout</h1>
+
+<div class="checkout-box">
+  <input id="name" placeholder="Full Name">
+  <input id="address" placeholder="Address">
+  <input id="city" placeholder="City">
+  <input id="pincode" placeholder="Pincode">
+  <input id="phone" placeholder="Phone Number">
+
+  <button onclick="placeOrder()">Place Order</button>
+</div>
+
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyC6Xjlqg3wpqosotpZyPARYSzQwKLPYk_k",
+  authDomain: "matek-billiards.firebaseapp.com",
+  projectId: "matek-billiards",
+  storageBucket: "matek-billiards.firebasestorage.app",
+  messagingSenderId: "357506490776",
+  appId: "1:357506490776:web:63c45761a18c015a750bed",
+  measurementId: "G-QSD9334RPG"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+
+// 🔥 FINAL CHECKOUT FUNCTION
+function placeOrder() {
+
+  console.log("Button clicked ✅");
+
+  const name = document.getElementById("name").value;
+  const address = document.getElementById("address").value;
+  const city = document.getElementById("city").value;
+  const pincode = document.getElementById("pincode").value;
+  const phone = document.getElementById("phone").value;
+
+  if (!name || !address || !city || !pincode || !phone) {
+    alert("Please fill all details");
+    return;
+  }
+
+  const user = firebase.auth().currentUser;
+
+  if (!user) {
+    alert("Login first");
+    return;
+  }
+
+  console.log("User:", user.uid);
+
+  db.collection("carts").doc(user.uid).get().then(doc => {
+
+    if (!doc.exists) {
+      alert("Cart is empty ❌");
+      return;
+    }
+
+    let cart = doc.data().items;
+
+    if (!cart || cart.length === 0) {
+      alert("Cart is empty ❌");
+      return;
+    }
+
+    let total = 0;
+
+    let orderId = "MB" + Math.floor(Math.random() * 1000000);
+    let date = new Date().toLocaleString();
+
+    let message = "👑 *MATEK BILLIARDS ORDER* 👑%0A%0A";
+
+    message += "🆔 Order ID: " + orderId + "%0A";
+    message += "📅 Date: " + date + "%0A%0A";
+
+    message += "👤 Customer:%0A";
+    message += "Name: " + name + "%0A";
+    message += "Address: " + address + ", " + city + "%0A";
+    message += "Pincode: " + pincode + "%0A";
+    message += "Phone: " + phone + "%0A%0A";
+
+    message += "🛒 Order:%0A";
+
+    cart.forEach((item, i) => {
+let price = Number(item.price);
+      let qty = item.quantity || 1;
+
+      total += price * qty;
+
+      message += `${i+1}. ${item.name} x${qty} - ₹${price * qty}%0A`;
+    });
+
+    message += `%0A💰 Total: ₹${total}%0A`;
+    message += `%0A🙏 Thank you!`;
+
+    let phoneNumber = "918905043253";
+
+    console.log("Opening WhatsApp...");
+
+    window.open(`https://wa.me/${phoneNumber}?text=${message}`, "_blank");
+
+    // SAVE ORDER
+    db.collection("orders").add({
+      userId: user.uid,
+      items: cart,
+      total: total,
+      orderId: orderId,
+      date: date
+    });
+
+    // CLEAR CART
+    db.collection("carts").doc(user.uid).delete();
+
+  });
+
+}
+</script>
+<script>
+firebase.auth().onAuthStateChanged(user => {
+  if (!user) {
+    window.location.href = "login.html";
+  } else {
+    console.log("User logged in:", user.uid);
+  }
+});
+</script>
+
+<br><br><br><br>
+<!-- 🔥 FOOTER -->
+<footer class="footer">
+
+  <div class="footer-top">
+    <h2 class="footer-logo">MATEK BILLIARDS</h2>
+    <p class="footer-tag">Timeless Craftsmanship</p>
+  </div>
+
+  <div class="footer-links">
+    <a href="index.html">Home</a>
+    <a href="shop.html">Collection</a>
+    <a href="index.html">Cart</a>
+    <a href="orders.html">Orders</a>
+  </div>
+
+  <div class="footer-contact">
+    <p>Email: matekbilliards@gmail.com</p>
+    <p>India • Luxury Timepieces</p>
+  </div>
+
+  <div class="footer-bottom">
+    <p>© 2026 MATEK BILLIARDS. All rights reserved.</p>
+  </div>
+
+</footer>
+
+</body>
+</html>
