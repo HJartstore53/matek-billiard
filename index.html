@@ -2,9 +2,11 @@
 <html>
 <head>
   <title>MATEK BILLIARDS</title>
+  <link rel="icon" type="image/x-icon" href="./logo.jpeg">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500&family=Playfair+Display:wght@500&display=swap" rel="stylesheet"> 
  <link rel="stylesheet" href="style.css">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 </head>
 <body>
@@ -23,6 +25,8 @@
   <a href="checkout.html" class="checkout-btn">Checkout</a>
 
 </div>
+
+
 <header class="main-header">
 
   <!-- TOP BAR -->
@@ -41,6 +45,16 @@
   </div>
 
   <p class="tag">Timeless Craftsmanship</p>
+
+ <div class="socials">
+        <a href="https://www.instagram.com/matek_billiards?igsh=MnAxcDVqdTV2ZGk3" target="_blank">
+            <i class="fab fa-instagram"></i></a>
+        <a href="https://wa.me/918905043253" target="_blank">
+            <i class="fab fa-whatsapp"></i></a>
+        <a href="mailto:@gmail.com">
+            <i class="fas fa-envelope"></i></a>
+        
+      </div>
 
   <!-- CENTER BUTTON -->
   <div class="center-btn">
@@ -78,28 +92,13 @@ const db = firebase.firestore();
 let checked = false;
 
 firebase.auth().onAuthStateChanged(user => {
-
-  if (checked) return;
-  checked = true;
-
-  if (!user) {
-    window.location.href = "login.html";
-    return;
-  }
-
-  // ✅ USER IS LOGGED IN (NO REDIRECT)
-  console.log("User logged in:", user.email);
-
-});
-</script>
-<script>
-firebase.auth().onAuthStateChanged(user => {
-  if (!user) {
-    window.location.href = "login.html";
+  if (user) {
+    console.log("User logged in:", user.email);
   } else {
-    console.log("User logged in:", user.uid);
+    console.log("Guest user");
   }
 });
+
 </script>
 
 <!-- THEN YOUR CODE -->
@@ -144,7 +143,7 @@ firebase.auth().onAuthStateChanged(user => {
     <p>
   Instagram: 
   <a href="https://www.instagram.com/matek_billiards?igsh=MnAxcDVqdTV2ZGk3" target="_blank" class="insta-link">
-    📸 @matek_billiards
+    📸 
   </a>
 </p>
     <p>India • Luxury Timepieces</p>

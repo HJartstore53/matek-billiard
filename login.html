@@ -2,6 +2,7 @@
 <html>
 <head>
   <title>Login</title>
+    <link rel="icon" type="image/x-icon" href="./logo.jpeg">
     <link rel="stylesheet" href="style.css">
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500&family=Playfair+Display:wght@500&display=swap" rel="stylesheet">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -98,6 +99,50 @@ function signup() {
 
 }
 
+firebase.auth().signInWithEmailAndPassword(email, pass)
+  .then((userCredential) => {
+
+    let user = userCredential.user;
+
+    // 🔥 MERGE LOCAL CART TO FIREBASE
+    let localCart = JSON.parse(localStorage.getItem("cart")) || [];
+
+    if (localCart.length > 0) {
+
+      const cartRef = firebase.firestore().collection("carts").doc(user.uid);
+
+      cartRef.get().then(doc => {
+
+        let firebaseCart = doc.exists ? doc.data().items : [];
+        if (!firebaseCart) firebaseCart = [];
+
+        localCart.forEach(item => {
+          let existing = firebaseCart.find(i => i.id === item.id);
+
+          if (existing) {
+            existing.quantity += item.quantity;
+          } else {
+            firebaseCart.push(item);
+          }
+        });
+
+        cartRef.set({ items: firebaseCart }).then(() => {
+          localStorage.removeItem("cart");
+        });
+
+      });
+
+    }
+
+    // REDIRECT
+    if (user.email === ADMIN_EMAIL) {
+      window.location.href = "admin.html";
+    } else {
+      window.location.href = "index.html";
+    }
+
+  })
+  
 </script>
 </body>
 </html>

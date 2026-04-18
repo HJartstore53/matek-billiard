@@ -2,6 +2,7 @@
 <html>
 <head>
   <title>Collection</title>
+  <link rel="icon" type="image/x-icon" href="./logo.jpeg">
 
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500&family=Playfair+Display:wght@500&display=swap" rel="stylesheet"> 
  <link rel="stylesheet" href="style.css">
@@ -15,6 +16,24 @@
   ⬅ Back to Home
 </button>
 <h1>Our Collection</h1>
+<div class="filter-box">
+
+  <div class="dropdown">
+    <div class="dropdown-btn" onclick="toggleDropdown()">
+      <span id="selectedCategory">✨ All Collections</span>
+      <span class="arrow">⌄</span>
+    </div>
+
+    <div class="dropdown-content" id="dropdownMenu">
+      <div onclick="selectCategory('all')">✨ All Collections</div>
+      <div onclick="selectCategory('Luxury')">💎 Luxury</div>
+      <div onclick="selectCategory('Sport')">🏎 Sport</div>
+      <div onclick="selectCategory('Classic')">⌚ Classic</div>
+    </div>
+
+  </div>
+
+</div>
 
 <div class="collection-gallery" id="gallery"></div></div>
 
@@ -56,17 +75,25 @@ loadProducts();
 
         let p = doc.data();
 
-        gallery.innerHTML += `
-          <div class="item">
-            <img src="${p.image}">
-            <h3>${p.name}</h3>
-            <p class="price">₹${p.price}</p>
+      gallery.innerHTML += `
+  <div class="item">
 
-            <button class="add-cart-btn" data-id="${doc.id}">
-              Add to Cart 🛒
-            </button>
-          </div>
-        `;
+    <img src="${p.image}">
+
+    <h3>${p.name}</h3>
+
+    <p class="price">₹${p.price}</p>
+
+    <p class="desc">${p.description || "Premium Quality Product"}</p>
+
+    <span class="category">${p.category || "General"}</span>
+
+    <button class="add-cart-btn" onclick="addToCart('${doc.id}')">
+      Add to Cart 🛒
+    </button>
+
+  </div>
+`;
 
       });
 
@@ -83,52 +110,173 @@ loadProducts();
 
 }
 //------------------------------------------------------------------------------//
+
+let allProducts = [];
+
+function loadProducts() {
+
+  const gallery = document.getElementById("gallery");
+
+  db.collection("products")
+    .orderBy("createdAt", "desc")
+    .onSnapshot(snapshot => {
+
+      allProducts = [];
+
+      snapshot.forEach(doc => {
+        let p = doc.data();
+        p.id = doc.id;
+        allProducts.push(p);
+      });
+
+      displayProducts(allProducts);
+
+    });
+
+}
+
+//------------------------------------------------------------------------------//
+
+
+function toggleDropdown() {
+  document.querySelector(".dropdown").classList.toggle("active");
+}
+
+function selectCategory(category) {
+
+  document.querySelector(".dropdown").classList.remove("active");
+
+  let textMap = {
+    all: "✨ All Collections",
+    Luxury: "💎 Luxury",
+    Sport: "🏎 Sport",
+    Classic: "⌚ Classic"
+  };
+
+  document.getElementById("selectedCategory").innerText = textMap[category];
+
+  // 🔥 filter products
+  if (category === "all") {
+    displayProducts(allProducts);
+  } else {
+    let filtered = allProducts.filter(p => p.category === category);
+    displayProducts(filtered);
+  }
+
+}
+//------------------------------------------------------------------------------//
+
+
+function displayProducts(products) {
+
+  const gallery = document.getElementById("gallery");
+  gallery.innerHTML = "";
+
+  products.forEach(p => {
+
+    gallery.innerHTML += `
+      <div class="item">
+
+        <img src="${p.image}">
+
+        <h3>${p.name}</h3>
+
+        <p class="price">₹${p.price}</p>
+
+        <p class="desc">${p.description || ""}</p>
+
+        <span class="category">${p.category || "General"}</span>
+
+        <button class="add-cart-btn" onclick="addToCart('${p.id}')">
+          Add to Cart 🛒
+        </button>
+
+      </div>
+    `;
+
+  });
+
+}
+
+//------------------------------------------------------------------------------//
+
+
+function filterProducts() {
+
+  let selected = document.getElementById("categoryFilter").value;
+
+  if (selected === "all") {
+    displayProducts(allProducts);
+  } else {
+    let filtered = allProducts.filter(p => p.category === selected);
+    displayProducts(filtered);
+  }
+
+}
+
+//------------------------------------------------------------------------------//
 function addToCart(id) {
 
   const user = firebase.auth().currentUser;
 
-
   db.collection("products").doc(id).get().then(doc => {
-
-    if (!doc.exists) {
-      alert("Product not found ❌");
-      return;
-    }
 
     let p = doc.data();
 
-    const cartRef = db.collection("carts").doc(user.uid);
+    if (user) {
+      // ✅ LOGGED-IN → FIREBASE
 
-    cartRef.get().then(cartDoc => {
+      const cartRef = db.collection("carts").doc(user.uid);
 
-      let cart = cartDoc.exists ? cartDoc.data().items : [];
+      cartRef.get().then(cartDoc => {
 
-      // 🔥 IMPORTANT: ensure array exists
-      if (!cart) cart = [];
+        let cart = cartDoc.exists ? cartDoc.data().items : [];
+        if (!cart) cart = [];
+
+        let existing = cart.find(item => item.id === id);
+
+        if (existing) {
+          existing.quantity += 1;
+        } else {
+          cart.push({
+            id: id,
+            name: p.name,
+            price: Number(p.price),
+            image: p.image,
+            quantity: 1
+          });
+        }
+
+        cartRef.set({ items: cart }).then(() => {
+          alert("Added to cart 🛒");
+        });
+
+      });
+
+    } else {
+      // ✅ NOT LOGGED-IN → LOCAL STORAGE
+
+      let cart = JSON.parse(localStorage.getItem("cart")) || [];
 
       let existing = cart.find(item => item.id === id);
 
       if (existing) {
-        existing.quantity = (existing.quantity || 1) + 1;
+        existing.quantity += 1;
       } else {
         cart.push({
           id: id,
           name: p.name,
-          price: Number(p.price), // 🔥 FIXED
+          price: Number(p.price),
           image: p.image,
           quantity: 1
         });
       }
 
-      cartRef.set({ items: cart }).then(() => {
-        alert("Added to cart 🛒");
-        loadCart(); // 🔥 refresh instantly
-      });
+      localStorage.setItem("cart", JSON.stringify(cart));
 
-    });
+      alert("Added to cart 🛒");
+    }
 
-  }).catch(err => {
-    console.error("Error:", err);
   });
 
 }
@@ -137,15 +285,7 @@ function addToCart(id) {
   }
 
 </script>
-<script>
-firebase.auth().onAuthStateChanged(user => {
-  if (!user) {
-    window.location.href = "login.html";
-  } else {
-    console.log("User logged in:", user.uid);
-  }
-});
-</script>
+
 
 
 <br><br><br><br>
@@ -168,7 +308,7 @@ firebase.auth().onAuthStateChanged(user => {
     <p>
   Instagram: 
   <a href="https://www.instagram.com/matek_billiards?igsh=MnAxcDVqdTV2ZGk3" target="_blank" class="insta-link">
-    📸 @matek_billiards
+    📸 
   </a>
 </p>
     <p>India • Luxury Timepieces</p>

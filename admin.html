@@ -2,6 +2,8 @@
 <html>
 <head>
   <title>Admin Dashboard</title>
+    <link rel="icon" type="image/x-icon" href="./logo.jpeg">
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Playfair+Display:wght@500&display=swap" rel="stylesheet">
@@ -229,10 +231,12 @@ button:hover {
     <h2>Add Product</h2>
 
     <div class="form-group">
-      <input id="pname" placeholder="Name">
-      <input id="pprice" placeholder="Price">
-      <input id="pimage" placeholder="Image URL">
-    </div>
+  <input id="pname" placeholder="Name">
+  <input id="pprice" placeholder="Price">
+  <input id="pimage" placeholder="Image URL">
+  <input id="pcategory" placeholder="Category (Luxury / Sport / Classic)">
+  <input id="pdesc" placeholder="Description">
+</div>
 
     <img id="preview">
 
@@ -313,11 +317,16 @@ function addProduct() {
   }
 
   db.collection("products").add({
-    name,
-    price,
-    image,
-    createdAt: new Date()
-  }).then(() => {
+  name: name,
+  price: Number(price),
+  image: image,
+  category: document.getElementById("pcategory").value,
+  description: document.getElementById("pdesc").value,
+  createdAt: new Date()
+
+  })
+  
+  .then(() => {
     alert("Product Added ✅");
 
     pname.value = "";

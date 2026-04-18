@@ -23,6 +23,7 @@ body {
   margin: 0;
  background: #0E2F26 url('https://www.transparenttextures.com/patterns/green-fibers.png');  color: #F5F5F5;
   font-family: 'Playfair Display', serif;
+  background-size: 180px;
 }
 
 /* HEADER */
@@ -741,59 +742,115 @@ header::after {
 
 /* 🌑 BODY (KEEP YOUR THEME) */
 
-/* 📦 CONTAINER */
+/* 🌌 COLLECTION CONTAINER */
 .main-container {
-  max-width: 1200px;
-  margin: auto;
   padding: 20px;
+}
+
+/* 🔙 BACK BUTTON */
+.back-btn {
+  background: linear-gradient(45deg, #00ffcc, #00cc99);
+  color: black;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-bottom: 15px;
+  transition: 0.3s;
+}
+
+.back-btn:hover {
+  transform: scale(1.05);
+  background: linear-gradient(45deg, #00cc99, #00ffcc);
 }
 
 /* 🏷 TITLE */
 h1 {
   text-align: center;
   margin-bottom: 20px;
-  font-family: 'Cinzel', serif;
 }
-/* 🔙 BACK BUTTON (THEME MATCHED) */
-.back-btn {
-  padding: 10px 15px;
-  border: none;
-  border-radius: 8px;
-  background: linear-gradient(45deg, #1f3b4d, #2c5364);
-  color: #ffffff;
-  font-weight: bold;
-  cursor: pointer;
+
+/* 🔽 FILTER CONTAINER */
+.filter-box {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
   margin-bottom: 20px;
+  align-items: flex-end;
+}
+
+/* 🏷 LABEL */
+.filter-label {
+  font-size: 13px;
+  color: #00ffcc;
+  opacity: 0.8;
+  margin-right: 5px;
+}
+
+/* 🎯 CUSTOM SELECT WRAPPER */
+.custom-select {
+  position: relative;
+}
+
+/* 🧊 SELECT STYLE */
+.custom-select select {
+  appearance: none;
+  padding: 10px 40px 10px 14px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.08);
+  color: white;
+  border: 1px solid rgba(255,255,255,0.15);
+  backdrop-filter: blur(10px);
+  cursor: pointer;
+  font-weight: 500;
   transition: 0.3s;
-  border: 1px solid rgba(255,255,255,0.1);
 }
 
-.back-btn:hover {
-  background: linear-gradient(45deg, #2c5364, #3a6d85);
-  box-shadow: 0 0 12px rgba(0,255,200,0.2);
-  transform: scale(1.05);
+/* ✨ HOVER */
+.custom-select select:hover {
+  border-color: #00ffcc;
+  box-shadow: 0 0 10px rgba(0,255,200,0.3);
 }
 
-/* 📱 MOBILE BUTTON */
+/* 🔽 CUSTOM ARROW */
+.custom-select::after {
+  content: "⌄";
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: #00ffcc;
+  font-size: 14px;
+}
+
+/* 📱 MOBILE */
 @media (max-width: 600px) {
-  .back-btn {
+
+  .filter-box {
+    align-items: center;
+  }
+
+  .custom-select select {
     width: 100%;
   }
+
 }
 
-/* 🖼 GALLERY GRID (FIXED RESPONSIVE) */
+/* 🛍 GRID */
 .collection-gallery {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 20px;
 }
 
-/* 🧊 CARD */
+/* 💎 PRODUCT CARD */
 .collection-gallery .item {
-  background: rgba(255,255,255,0.06);
-  border-radius: 15px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
   overflow: hidden;
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(12px);
   border: 1px solid rgba(255,255,255,0.1);
   transition: 0.3s;
   display: flex;
@@ -802,18 +859,18 @@ h1 {
 
 /* ✨ HOVER */
 .collection-gallery .item:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 8px 20px rgba(0,255,200,0.2);
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 0 25px rgba(0,255,200,0.2);
 }
 
-/* 🖼 IMAGE (SAME SIZE FIXED) */
+/* 🖼 IMAGE FIX (VERY IMPORTANT) */
 .collection-gallery .item img {
   width: 100%;
-  height: 200px;
+  height: 240px;
   object-fit: cover;
 }
 
-/* 🏷 TITLE */
+/* 🧾 CONTENT */
 .collection-gallery .item h3 {
   font-size: 16px;
   margin: 10px;
@@ -822,34 +879,50 @@ h1 {
 /* 💰 PRICE */
 .collection-gallery .price {
   color: #00ffcc;
-  margin: 0 10px 10px;
+  margin: 0 10px;
+  font-weight: bold;
 }
 
+/* 📝 DESCRIPTION */
+.desc {
+  font-size: 13px;
+  opacity: 0.8;
+  margin: 5px 10px;
+  line-height: 1.4;
+}
 
-/* 🛒 ADD TO CART BUTTON (PREMIUM TEAL STYLE) */
-.collection-gallery .add-cart-btn {
+/* 🏷 CATEGORY */
+.category {
+  margin: 5px 10px;
+  padding: 4px 8px;
+  font-size: 11px;
+  background: rgba(0,255,200,0.15);
+  border-radius: 6px;
+  color: #00ffcc;
+  width: fit-content;
+}
+
+/* 🛒 BUTTON */
+.add-cart-btn {
   margin: 10px;
   padding: 10px;
-  width: calc(100% - 20px);
   border: none;
-  border-radius: 8px;
-  background: linear-gradient(45deg, #2c5364, #203a43);
-  color: #ffffff;
+  border-radius: 10px;
+  background: linear-gradient(45deg, #00ffcc, #00cc99);
+  color: black;
   font-weight: bold;
   cursor: pointer;
   transition: 0.3s;
-  border: 1px solid rgba(255,255,255,0.1);
 }
 
-/* 🔥 HOVER */
-.collection-gallery .add-cart-btn:hover {
-  background: linear-gradient(45deg, #3a6d85, #2c5364);
-  box-shadow: 0 0 15px rgba(0,255,200,0.25);
+.add-cart-btn:hover {
   transform: scale(1.05);
+  background: linear-gradient(45deg, #00cc99, #00ffcc);
 }
 
-/* 📱 TABLET */
+/* 📱 MOBILE RESPONSIVE */
 @media (max-width: 768px) {
+
   .collection-gallery {
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   }
@@ -857,22 +930,124 @@ h1 {
   .collection-gallery .item img {
     height: 180px;
   }
+
+  h1 {
+    font-size: 22px;
+  }
+
+  .back-btn {
+    width: 100%;
+  }
+
 }
 
-/* 📱 MOBILE */
+/* 📱 SMALL DEVICES */
 @media (max-width: 480px) {
+
   .collection-gallery {
     grid-template-columns: 1fr;
   }
 
   .collection-gallery .item img {
-    height: 160px;
+    height: 200px;
   }
 
-  h1 {
-    font-size: 20px;
+  .filter-box {
+    justify-content: center;
+  }
+
+}
+
+/* 🔽 DROPDOWN CONTAINER */
+.dropdown {
+  position: relative;
+  width: 220px;
+  z-index: 1000;
+}
+
+/* 🎯 BUTTON */
+.dropdown-btn {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: white;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  transition: 0.3s;
+}
+
+.dropdown-btn:hover {
+  border-color: #00ffcc;
+  box-shadow: 0 0 10px rgba(0,255,200,0.3);
+}
+
+/* 🔽 ARROW ANIMATION */
+.arrow {
+  transition: 0.3s;
+}
+
+.dropdown.active .arrow {
+  transform: rotate(180deg);
+}
+
+/* 📦 DROPDOWN MENU */
+.dropdown-content {
+  position: absolute;
+  z-index: 2000;
+  top: 110%;
+  left: 0;
+  width: 100%;
+  background: rgba(20,20,20,0.95);
+  border-radius: 10px;
+  overflow: hidden;
+  display: none;
+  flex-direction: column;
+  border: 1px solid rgba(255,255,255,0.1);
+  backdrop-filter: blur(12px);
+  animation: fadeIn 0.3s ease;
+}
+
+/* ✨ ITEMS */
+.dropdown-content div {
+  padding: 12px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.dropdown-content div:hover {
+  background: rgba(0,255,200,0.15);
+  padding-left: 18px;
+}
+
+/* SHOW */
+.dropdown.active .dropdown-content {
+  display: flex;
+}
+
+/* ANIMATION */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
+
+/* 📱 MOBILE */
+@media (max-width: 600px) {
+  .dropdown {
+    width: 100%;
+  }
+}
+
+
 /* =========================
    LOGIN RESPONSIVE FIX (NO DESIGN CHANGE)
 ========================= */
@@ -1110,3 +1285,23 @@ h1 {
   }
 
 }
+
+/* 🌟 SOCIAL ICONS BELOW TAGLINE */
+.socials {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 15px;
+color: #D4AF37;}
+
+/* ICON STYLE */
+    .socials a{
+      margin:0 .35rem;
+      color:var(--dark);
+      font-size:1.1rem;
+      transition:.3s;
+    }
+
+    .socials a:hover{
+      color:var(--accent);
+    }

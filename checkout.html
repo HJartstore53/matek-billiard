@@ -2,6 +2,7 @@
 <html>
 <head>
   <title>Checkout</title>
+  <link rel="icon" type="image/x-icon" href="./logo.jpeg">
 
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500&family=Playfair+Display:wght@500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
@@ -132,6 +133,20 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
+
+
+firebase.auth().onAuthStateChanged(user => {
+
+  if (!user) {
+    alert("Please login to continue 🚪");
+    window.location.href = "login.html";
+    return;
+  }
+
+  // ✅ user is logged in → load cart
+  loadCart();
+
+});
 
 // 🔥 FINAL CHECKOUT FUNCTION
 function placeOrder() {
