@@ -280,12 +280,7 @@ function toggleCart() {
 }
 
 
-function logoutUser() {
-  firebase.auth().signOut().then(() => {
-    alert("Logged out 👋");
-    window.location.href = "login.html";
-  });
-}
+
 
 
 function openCollection() {
@@ -325,3 +320,28 @@ function loadCollectionProducts() {
 
 }
 
+
+const authArea = document.getElementById("auth-area");
+
+firebase.auth().onAuthStateChanged(user => {
+
+  if (user) {
+    // ✅ USER LOGGED IN
+    authArea.innerHTML = `
+      <button class="logout-btn" onclick="logout()">Logout</button>
+    `;
+  } else {
+    // ❌ USER NOT LOGGED IN
+    authArea.innerHTML = `
+      <a href="login.html" class="login-btn">Login / Signup</a>
+    `;
+  }
+
+});
+
+/* LOGOUT FUNCTION */
+function logout() {
+  firebase.auth().signOut().then(() => {
+    alert("Logged out ✅");
+  });
+}

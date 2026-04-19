@@ -679,21 +679,98 @@ header::after {
   justify-content: flex-end;
 }
 
-.logout-btn {
-  background: transparent;
-  border: 1px solid gold;
-  color: gold;
-  padding: 6px 12px;
+/* LOGIN BUTTON */
+.login-btn {
+  padding: 8px 14px;
+  border: 1px solid #D4AF37;
+  color: #D4AF37;
+  text-decoration: none;
   border-radius: 6px;
-  cursor: pointer;
   transition: 0.3s;
 }
 
-.logout-btn:hover {
-  background: gold;
+.login-btn:hover {
+  background: #D4AF37;
   color: black;
 }
 
+/* LOGOUT BUTTON (you already have but improved) */
+/* LOGIN BUTTON */
+.login-btn {
+  padding: 8px 14px;
+  border: 1px solid #D4AF37;
+  color: #D4AF37;
+  text-decoration: none;
+  border-radius: 6px;
+  transition: 0.3s;
+}
+
+.login-btn:hover {
+  background: #D4AF37;
+  color: black;
+}
+
+/* LOGOUT BUTTON (you already have but improved) */
+/* 🔝 TOP LEFT AUTH */
+.top-left-auth {
+  position: absolute;
+  top: 30px;
+  left: 25px;
+  z-index: 1000;
+}
+
+/* BUTTON BASE */
+.top-left-auth .login-btn,
+.top-left-auth .logout-btn {
+  padding: 8px 14px;
+  font-size: 13px;
+  border-radius: 6px;
+  border: 1px solid #D4AF37;
+  color: #D4AF37;
+  background: transparent;
+  cursor: pointer;
+  transition: 0.3s;
+  text-decoration: none;
+}
+
+/* HOVER */
+.top-left-auth .login-btn:hover,
+.top-left-auth .logout-btn:hover {
+  background: #D4AF37;
+  color: black;
+}
+
+/* 📱 MOBILE FIX */
+@media (max-width: 768px) {
+
+  .top-left-auth {
+    top: 20px;
+    left: 15px;
+  }
+
+  .top-left-auth .login-btn,
+  .top-left-auth .logout-btn {
+    padding: 6px 10px;
+    font-size: 11px;
+  }
+
+}
+
+/* 📱 SMALL PHONES */
+@media (max-width: 480px) {
+
+  .top-left-auth {
+    top: 20px;
+    left: 15px;
+  }
+
+  .top-left-auth .login-btn,
+  .top-left-auth .logout-btn {
+    padding: 5px 8px;
+    font-size: 10px;
+  }
+
+}
 /* HEADER */
 .main-header {
   text-align: center;
@@ -894,8 +971,8 @@ h1 {
 /* 🏷 CATEGORY */
 .category {
   margin: 5px 10px;
-  padding: 4px 8px;
-  font-size: 11px;
+  padding: 6px 10px;
+  font-size: 13px;
   background: rgba(0,255,200,0.15);
   border-radius: 6px;
   color: #00ffcc;
@@ -1305,3 +1382,49 @@ color: #D4AF37;}
     .socials a:hover{
       color:var(--accent);
     }
+
+
+    .image-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  background: rgba(0,0,0,0.9);
+  z-index: 999999;
+}
+
+.image-modal img {
+  max-width: 90%;
+  max-height: 85%;
+  border-radius: 12px;
+}
+
+.close-modal {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: white;
+  color: black;
+  font-size: 24px;
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+
+select {
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  outline: none;
+  background: white;
+  cursor: pointer;
+}
+

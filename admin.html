@@ -234,8 +234,15 @@ button:hover {
   <input id="pname" placeholder="Name">
   <input id="pprice" placeholder="Price">
   <input id="pimage" placeholder="Image URL">
-  <input id="pcategory" placeholder="Category (Luxury / Sport / Classic)">
-  <input id="pdesc" placeholder="Description">
+
+<select id="pcategory">
+  <option value="">Select Category</option>
+  <option value="Luxury">💎 Luxury</option>
+  <option value="Sport">🏎 Sport</option>
+  <option value="Classic">⌚ Classic</option>
+</select>
+
+<input id="pdesc" placeholder="Description">
 </div>
 
     <img id="preview">
@@ -310,11 +317,12 @@ function addProduct() {
   let name = pname.value;
   let price = pprice.value;
   let image = pimage.value;
+  let category = document.getElementById("pcategory").value;
 
-  if (!name || !price || !image) {
-    alert("Fill all fields ❌");
-    return;
-  }
+if (!name || !price || !image || !category) {
+  alert("Fill all fields ❌");
+  return;
+}
 
   db.collection("products").add({
   name: name,
@@ -329,10 +337,12 @@ function addProduct() {
   .then(() => {
     alert("Product Added ✅");
 
-    pname.value = "";
-    pprice.value = "";
-    pimage.value = "";
-    preview.src = "";
+pname.value = "";
+pprice.value = "";
+pimage.value = "";
+pcategory.value = "";   // ✅ ADD THIS
+pdesc.value = "";       // ✅ ADD THIS
+preview.src = "";
 
   });
 
@@ -360,7 +370,14 @@ function loadProducts() {
             <img src="${p.image}" class="admin-img">
 
             <input value="${p.name}" id="name-${id}">
-            <input value="${p.price}" id="price-${id}">
+<input value="${p.price}" id="price-${id}">
+<select id="category-${id}">
+  <option value="">Select Category</option>
+  <option value="Luxury" ${p.category === "Luxury" ? "selected" : ""}>💎 Luxury</option>
+  <option value="Sport" ${p.category === "Sport" ? "selected" : ""}>🏎 Sport</option>
+  <option value="Classic" ${p.category === "Classic" ? "selected" : ""}>⌚ Classic</option>
+</select>
+<input value="${p.description || ''}" id="desc-${id}" placeholder="Description">
 
             <div class="actions">
               <button onclick="updateProduct('${id}')">Update ✏️</button>
@@ -381,9 +398,12 @@ function updateProduct(id) {
 
   db.collection("products").doc(id).update({
     name: document.getElementById(`name-${id}`).value,
-    price: document.getElementById(`price-${id}`).value
+    price: Number(document.getElementById(`price-${id}`).value),
+    category: document.getElementById(`category-${id}`).value,
+    description: document.getElementById(`desc-${id}`).value
   });
 
+  alert("Updated ✅");
 }
 
 /* DELETE */

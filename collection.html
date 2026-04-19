@@ -1,189 +1,118 @@
 <!DOCTYPE html>
+
 <html>
 <head>
-  <title>Collection</title>
-  <link rel="icon" type="image/x-icon" href="./logo.jpeg">
-
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500&family=Playfair+Display:wght@500&display=swap" rel="stylesheet"> 
- <link rel="stylesheet" href="style.css">
+  <title>Matek Billiards | Collection</title>
+  <link rel="icon" href="./logo.jpeg">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500&family=Playfair+Display:wght@500&display=swap" rel="stylesheet"> 
+  <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
+
 <div class="main-container">
-<button onclick="goHome()" class="back-btn">
-  ⬅ Back to Home
-</button>
-<h1>Our Collection</h1>
+
+<button onclick="goHome()" class="back-btn">⬅ Back</button>
+
+<h1 class="collection-title">Our Collection</h1>
+
+<!-- CATEGORY -->
+
 <div class="filter-box">
+  <div class="dropdown" id="dropdown">
 
-  <div class="dropdown">
-    <div class="dropdown-btn" onclick="toggleDropdown()">
-      <span id="selectedCategory">✨ All Collections</span>
-      <span class="arrow">⌄</span>
-    </div>
 
-    <div class="dropdown-content" id="dropdownMenu">
-      <div onclick="selectCategory('all')">✨ All Collections</div>
-      <div onclick="selectCategory('Luxury')">💎 Luxury</div>
-      <div onclick="selectCategory('Sport')">🏎 Sport</div>
-      <div onclick="selectCategory('Classic')">⌚ Classic</div>
-    </div>
+<div class="dropdown-btn" onclick="toggleDropdown()">
+  <span id="selectedCategory">✨ All Collections</span>
+  <span class="arrow">⌄</span>
+</div>
+
+<div class="dropdown-content">
+  <div onclick="selectCategory('all')">✨ All Collections</div>
+  <div onclick="selectCategory('Luxury')">💎 Luxury</div>
+  <div onclick="selectCategory('Sport')">🏎 Sport</div>
+  <div onclick="selectCategory('Classic')">⌚ Classic</div>
+</div>
+
 
   </div>
+</div>
+
+<!-- PRODUCTS -->
+
+<div id="gallery" class="collection-gallery"></div>
 
 </div>
 
-<div class="collection-gallery" id="gallery"></div></div>
+<!-- IMAGE MODAL -->
+
+<div id="imageModal" class="image-modal" onclick="outsideClick(event)">
+  <span class="close-modal" onclick="closeImage()">×</span>
+  <img id="modalImg">
+</div>
+
+<!-- FIREBASE -->
 
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 
 <script>
-    
- const firebaseConfig = {
-    apiKey: "AIzaSyC6Xjlqg3wpqosotpZyPARYSzQwKLPYk_k",
-    authDomain: "matek-billiards.firebaseapp.com",
-    projectId: "matek-billiards",
-    storageBucket: "matek-billiards.firebasestorage.app",
-    messagingSenderId: "357506490776",
-    appId: "1:357506490776:web:63c45761a18c015a750bed",
-    measurementId: "G-QSD9334RPG"
-  };
-
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "matek-billiards.firebaseapp.com",
+  projectId: "matek-billiards"
+};
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-
-loadProducts();
-//---------------------------------------------------//
-
- function loadProducts() {
-
-  const gallery = document.getElementById("gallery");
-
-  db.collection("products")
-    .orderBy("createdAt", "desc")
-    .onSnapshot(snapshot => {
-
-      gallery.innerHTML = "";
-
-      snapshot.forEach(doc => {
-
-        let p = doc.data();
-
-      gallery.innerHTML += `
-  <div class="item">
-
-    <img src="${p.image}">
-
-    <h3>${p.name}</h3>
-
-    <p class="price">₹${p.price}</p>
-
-    <p class="desc">${p.description || "Premium Quality Product"}</p>
-
-    <span class="category">${p.category || "General"}</span>
-
-    <button class="add-cart-btn" onclick="addToCart('${doc.id}')">
-      Add to Cart 🛒
-    </button>
-
-  </div>
-`;
-
-      });
-
-      // 🔥 THIS IS AFTER RENDERING
-      document.querySelectorAll(".add-cart-btn").forEach(btn => {
-        btn.onclick = () => {
-          addToCart(btn.dataset.id);
-        };
-      });
-
-    }, error => {
-      console.error("Realtime error:", error);
-    });
-
-}
-//------------------------------------------------------------------------------//
-
 let allProducts = [];
 
-function loadProducts() {
+/* LOAD PRODUCTS */
+db.collection("products")
+  .orderBy("createdAt", "desc")
+  .onSnapshot(snapshot => {
 
-  const gallery = document.getElementById("gallery");
+    allProducts = [];
 
-  db.collection("products")
-    .orderBy("createdAt", "desc")
-    .onSnapshot(snapshot => {
-
-      allProducts = [];
-
-      snapshot.forEach(doc => {
-        let p = doc.data();
-        p.id = doc.id;
-        allProducts.push(p);
-      });
-
-      displayProducts(allProducts);
-
+    snapshot.forEach(doc => {
+      let p = doc.data();
+      p.id = doc.id;
+      allProducts.push(p);
     });
 
-}
+    renderProducts(allProducts);
+  });
 
-//------------------------------------------------------------------------------//
-
-
-function toggleDropdown() {
-  document.querySelector(".dropdown").classList.toggle("active");
-}
-
-function selectCategory(category) {
-
-  document.querySelector(".dropdown").classList.remove("active");
-
-  let textMap = {
-    all: "✨ All Collections",
-    Luxury: "💎 Luxury",
-    Sport: "🏎 Sport",
-    Classic: "⌚ Classic"
-  };
-
-  document.getElementById("selectedCategory").innerText = textMap[category];
-
-  // 🔥 filter products
-  if (category === "all") {
-    displayProducts(allProducts);
-  } else {
-    let filtered = allProducts.filter(p => p.category === category);
-    displayProducts(filtered);
-  }
-
-}
-//------------------------------------------------------------------------------//
-
-
-function displayProducts(products) {
+/* RENDER */
+function renderProducts(products) {
 
   const gallery = document.getElementById("gallery");
   gallery.innerHTML = "";
+
+  if (products.length === 0) {
+    gallery.innerHTML = "<p style='text-align:center;'>No products found 😔</p>";
+    return;
+  }
 
   products.forEach(p => {
 
     gallery.innerHTML += `
       <div class="item">
 
-        <img src="${p.image}">
+        
+        <img src="${p.image}" onclick="openImage('${p.image}')">
 
         <h3>${p.name}</h3>
 
         <p class="price">₹${p.price}</p>
 
-        <p class="desc">${p.description || ""}</p>
+        <p class="desc">${p.description || "Premium Product"}</p>
 
         <span class="category">${p.category || "General"}</span>
 
@@ -193,28 +122,55 @@ function displayProducts(products) {
 
       </div>
     `;
-
   });
-
 }
 
-//------------------------------------------------------------------------------//
+/* DROPDOWN */
+function toggleDropdown() {
+  document.getElementById("dropdown").classList.toggle("active");
+}
 
+function selectCategory(cat) {
 
-function filterProducts() {
+  document.getElementById("dropdown").classList.remove("active");
 
-  let selected = document.getElementById("categoryFilter").value;
+  const names = {
+    all: "✨ All Collections",
+    Luxury: "💎 Luxury",
+    Sport: "🏎 Sport",
+    Classic: "⌚ Classic"
+  };
 
-  if (selected === "all") {
-    displayProducts(allProducts);
+  document.getElementById("selectedCategory").innerText = names[cat];
+
+  if (cat === "all") {
+    renderProducts(allProducts);
   } else {
-    let filtered = allProducts.filter(p => p.category === selected);
-    displayProducts(filtered);
+    const filtered = allProducts.filter(p => p.category === cat);
+    renderProducts(filtered);
   }
-
 }
 
-//------------------------------------------------------------------------------//
+/* IMAGE MODAL */
+function openImage(src) {
+  document.getElementById("modalImg").src = src;
+  document.getElementById("imageModal").style.display = "flex";
+}
+
+function closeImage() {
+  document.getElementById("imageModal").style.display = "none";
+}
+
+function outsideClick(e) {
+  if (e.target.id === "imageModal") closeImage();
+}
+
+/* ESC CLOSE */
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") closeImage();
+});
+
+/* CART */
 function addToCart(id) {
 
   const user = firebase.auth().currentUser;
@@ -224,7 +180,6 @@ function addToCart(id) {
     let p = doc.data();
 
     if (user) {
-      // ✅ LOGGED-IN → FIREBASE
 
       const cartRef = db.collection("carts").doc(user.uid);
 
@@ -233,13 +188,12 @@ function addToCart(id) {
         let cart = cartDoc.exists ? cartDoc.data().items : [];
         if (!cart) cart = [];
 
-        let existing = cart.find(item => item.id === id);
+        let existing = cart.find(i => i.id === id);
 
-        if (existing) {
-          existing.quantity += 1;
-        } else {
+        if (existing) existing.quantity++;
+        else {
           cart.push({
-            id: id,
+            id,
             name: p.name,
             price: Number(p.price),
             image: p.image,
@@ -247,24 +201,20 @@ function addToCart(id) {
           });
         }
 
-        cartRef.set({ items: cart }).then(() => {
-          alert("Added to cart 🛒");
-        });
-
+        cartRef.set({ items: cart });
+        alert("Added to cart 🛒");
       });
 
     } else {
-      // ✅ NOT LOGGED-IN → LOCAL STORAGE
 
       let cart = JSON.parse(localStorage.getItem("cart")) || [];
 
-      let existing = cart.find(item => item.id === id);
+      let existing = cart.find(i => i.id === id);
 
-      if (existing) {
-        existing.quantity += 1;
-      } else {
+      if (existing) existing.quantity++;
+      else {
         cart.push({
-          id: id,
+          id,
           name: p.name,
           price: Number(p.price),
           image: p.image,
@@ -273,51 +223,16 @@ function addToCart(id) {
       }
 
       localStorage.setItem("cart", JSON.stringify(cart));
-
       alert("Added to cart 🛒");
     }
-
   });
-
 }
-  function goHome() {
-    window.location.href = "index.html";
-  }
 
+/* NAV */
+function goHome() {
+  window.location.href = "index.html";
+}
 </script>
 
-
-
-<br><br><br><br>
-<footer class="footer">
-
-  <div class="footer-top">
-    <h2 class="footer-logo">MATEK BILLIARDS</h2>
-    <p class="footer-tag">Timeless Craftsmanship</p>
-  </div>
-
-  <div class="footer-links">
-    <a href="index.html">Home</a>
-<a href="collection.html">Collection</a>
-<a href="#" onclick="toggleCart()">Cart</a>
-    <a href="orders.html">Orders</a>
-  </div>
-
-  <div class="footer-contact">
-    <p>Email: matekbilliards@gmail.com</p>
-    <p>
-  Instagram: 
-  <a href="https://www.instagram.com/matek_billiards?igsh=MnAxcDVqdTV2ZGk3" target="_blank" class="insta-link">
-    📸 
-  </a>
-</p>
-    <p>India • Luxury Timepieces</p>
-  </div>
-
-  <div class="footer-bottom">
-    <p>© 2026 MATEK BILLIARDS. All rights reserved.</p>
-  </div>
-
-</footer>
 </body>
 </html>
