@@ -47,7 +47,6 @@ function loadProducts() {
 
 }
 
-window.onload = loadProducts;
 // =========================
 // 🎯 SHOW PRODUCTS
 // =========================
@@ -70,43 +69,41 @@ watches.forEach(w => {
 // 🛒 ADD TO CART (FIRESTORE)
 // =========================
 function addToCart(product) {
-  firebase.auth().onAuthStateChanged(user => {
 
-    if (!user) {
-      alert("Login first");
-      return;
+  let user = firebase.auth().currentUser;
+
+  // ❌ NOT LOGGED IN → REDIRECT TO LOGIN
+  if (!user) {
+    alert("Please login to add items 🛒");
+    window.location.href = "login.html";
+    return;
+  }
+
+  // ✅ LOGGED IN → SAVE IN FIREBASE
+  const userId = user.uid;
+
+  db.collection("carts").doc(userId).get().then(doc => {
+
+    let cart = doc.exists ? doc.data().items || [] : [];
+
+    let existing = cart.find(item => item.name === product.name);
+
+    if (existing) {
+      existing.quantity += 1;
+    } else {
+      product.quantity = 1;
+      cart.push(product);
     }
 
-    const userId = user.uid;
-
-    db.collection("carts").doc(userId).get().then(doc => {
-
-      let cart = [];
-
-      if (doc.exists) {
-        cart = doc.data().items || [];
-      }
-
-      let existing = cart.find(item => item.name === product.name);
-
-      if (existing) {
-        existing.quantity = (existing.quantity || 1) + 1;
-      } else {
-        product.quantity = 1;
-        cart.push(product);
-      }
-
-      db.collection("carts").doc(userId).set({
-        items: cart
-      });
-
-      alert("Added to cart 🛒");
-      updateCartCount();
+    db.collection("carts").doc(userId).set({
+      items: cart
     });
 
+    alert("Added to cart 🛒");
+    loadCart();
+    updateCartCount();
   });
 }
-
 // =========================
 // 🛒 TOGGLE CART PANEL
 // =========================
@@ -120,62 +117,60 @@ function toggleCart() {
 // =========================
 function loadCart() {
 
-  firebase.auth().onAuthStateChanged(user => {
+  const container = document.getElementById("cart-items");
+  const totalBox = document.getElementById("cart-total");
 
-    if (!user) {
-      console.log("No user logged in");
+  if (!container) return;
+
+  let user = firebase.auth().currentUser;
+
+  container.innerHTML = "";
+  let total = 0;
+
+  // ❌ NOT LOGGED IN
+  if (!user) {
+    container.innerHTML = "<p>Please login to view cart 🔒</p>";
+    totalBox.innerText = "Total: ₹0";
+    return;
+  }
+
+  // ✅ LOGGED IN → FIREBASE
+  db.collection("carts").doc(user.uid).get().then(doc => {
+
+    let cart = doc.exists ? doc.data().items || [] : [];
+
+    if (cart.length === 0) {
+      container.innerHTML = "<p>Cart is empty 🛒</p>";
+      totalBox.innerText = "Total: ₹0";
       return;
     }
 
-    db.collection("carts").doc(user.uid)
-      .onSnapshot(doc => {
+    cart.forEach((item, index) => {
 
-        const container = document.getElementById("cart-items");
-        let total = 0;
-        container.innerHTML = "";
+      total += item.price * item.quantity;
 
-        if (!doc.exists || !doc.data().items) {
-          container.innerHTML = "<p>Cart is empty</p>";
-          document.getElementById("cart-total").innerText = "Total: ₹0";
-          return;
-        }
+      container.innerHTML += `
+        <div class="cart-item">
+          <img src="${item.image}">
+          <div class="item-info">
+            <h4>${item.name}</h4>
+            <p>₹${item.price} x ${item.quantity}</p>
+          </div>
 
-        let cart = doc.data().items;
+          <div class="item-controls">
+            <button onclick="changeQty(${index}, -1)">−</button>
+            <span>${item.quantity}</span>
+            <button onclick="changeQty(${index}, 1)">+</button>
+          </div>
 
-        cart.forEach((item, index) => {
+          <button class="remove-btn" onclick="removeItem(${index})">✖</button>
+        </div>
+      `;
+    });
 
-          let price = parseInt(item.price);
-          let quantity = item.quantity || 1;
-
-          total += price * quantity;
-
-          container.innerHTML += `
-            <div class="cart-item">
-              
-              <img src="${item.image}" style="width:60px; height:60px; object-fit:cover; border-radius:8px;">
-
-              <div class="item-info">
-                <h4>${item.name}</h4>
-                <p>₹${price}</p>
-              </div>
-
-              <div class="item-controls">
-                <button onclick="changeQty(${index}, -1)">−</button>
-                <span>${quantity}</span>
-                <button onclick="changeQty(${index}, 1)">+</button>
-              </div>
-
-              <button class="remove-btn" onclick="removeItem(${index})">✖</button>
-            </div>
-          `;
-        });
-
-        document.getElementById("cart-total").innerText = "Total: ₹" + total;
-
-      });
+    totalBox.innerText = "Total: ₹" + total;
 
   });
-
 }
 // =========================
 // 🔢 UPDATE CART COUNT
@@ -268,19 +263,13 @@ function changeQty(index, change) {
 // 🚀 INIT
 // =========================
 window.onload = function() {
-  updateCartCount();
+  firebase.auth().onAuthStateChanged(user => {
+    if (user) {
+      loadCart();
+      updateCartCount();
+    }
+  });
 };
-
-
-
-
-function toggleCart() {
-  document.getElementById("cart-panel").classList.toggle("open");
-  loadCart();
-}
-
-
-
 
 
 function openCollection() {
@@ -345,3 +334,4 @@ function logout() {
     alert("Logged out ✅");
   });
 }
+

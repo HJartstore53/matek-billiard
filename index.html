@@ -99,6 +99,9 @@ firebase.auth().onAuthStateChanged(user => {
   }
 });
 
+window.addEventListener("storage", () => {
+  loadCart();
+});
 </script>
 
 <!-- THEN YOUR CODE -->

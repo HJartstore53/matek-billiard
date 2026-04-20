@@ -40,6 +40,27 @@
   </div>
 </div>
 
+<!-- CART OVERLAY -->
+<div id="cart-overlay" class="cart-overlay" onclick="toggleCart()"></div>
+
+<!-- CART PANEL -->
+<div id="cart-panel" class="cart-panel">
+
+  <div class="cart-header">
+    <h2>Your Cart 🛒</h2>
+    <span class="close-cart" onclick="toggleCart()">✖</span>
+  </div>
+
+  <div id="cart-items"></div>
+
+  <p id="cart-total">Total: ₹0</p>
+
+  <a href="checkout.html" class="checkout-btn">Checkout</a>
+
+</div>
+
+
+
 <!-- PRODUCTS -->
 
 <div id="gallery" class="collection-gallery"></div>
@@ -63,13 +84,30 @@
 
 <script>
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "matek-billiards.firebaseapp.com",
-  projectId: "matek-billiards"
-};
+    apiKey: "AIzaSyC6Xjlqg3wpqosotpZyPARYSzQwKLPYk_k",
+    authDomain: "matek-billiards.firebaseapp.com",
+    projectId: "matek-billiards",
+    storageBucket: "matek-billiards.firebasestorage.app",
+    messagingSenderId: "357506490776",
+    appId: "1:357506490776:web:63c45761a18c015a750bed",
+    measurementId: "G-QSD9334RPG"
+  };
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
+
+let currentUser = null;
+
+firebase.auth().onAuthStateChanged(user => {
+  currentUser = user;
+
+  if (user) {
+    loadCart();
+    console.log("User logged in:", user.uid);
+  } else {
+    console.log("No user");
+  }
+});
 
 let allProducts = [];
 
@@ -173,41 +211,22 @@ document.addEventListener("keydown", e => {
 /* CART */
 function addToCart(id) {
 
-  const user = firebase.auth().currentUser;
+  // ❌ NOT LOGGED IN
+  if (!currentUser) {
+    alert("Please login first 🛒");
+    window.location.href = "login.html";
+    return;
+  }
 
+  // ✅ LOGGED IN → DIRECT ADD (NO CHECK AGAIN)
   db.collection("products").doc(id).get().then(doc => {
 
     let p = doc.data();
+    const cartRef = db.collection("carts").doc(currentUser.uid);
 
-    if (user) {
+    cartRef.get().then(cartDoc => {
 
-      const cartRef = db.collection("carts").doc(user.uid);
-
-      cartRef.get().then(cartDoc => {
-
-        let cart = cartDoc.exists ? cartDoc.data().items : [];
-        if (!cart) cart = [];
-
-        let existing = cart.find(i => i.id === id);
-
-        if (existing) existing.quantity++;
-        else {
-          cart.push({
-            id,
-            name: p.name,
-            price: Number(p.price),
-            image: p.image,
-            quantity: 1
-          });
-        }
-
-        cartRef.set({ items: cart });
-        alert("Added to cart 🛒");
-      });
-
-    } else {
-
-      let cart = JSON.parse(localStorage.getItem("cart")) || [];
+      let cart = cartDoc.exists ? cartDoc.data().items || [] : [];
 
       let existing = cart.find(i => i.id === id);
 
@@ -222,17 +241,83 @@ function addToCart(id) {
         });
       }
 
-      localStorage.setItem("cart", JSON.stringify(cart));
-      alert("Added to cart 🛒");
-    }
-  });
-}
+      cartRef.set({ items: cart });
 
+      alert("Added to cart 🛒");
+      loadCart();
+    });
+
+  });
+
+}
 /* NAV */
 function goHome() {
   window.location.href = "index.html";
 }
+
+function toggleCart() {
+  document.getElementById("cart-panel").classList.toggle("open");
+  document.getElementById("cart-overlay").classList.toggle("open");
+  loadCart();
+}
+
+window.onload = function() {
+
+  firebase.auth().onAuthStateChanged(user => {
+    if (user) {
+      loadCart();
+    }
+  });
+
+};
+
+function loadCart() {
+
+  const container = document.getElementById("cart-items");
+  const totalBox = document.getElementById("cart-total");
+
+  const user = firebase.auth().currentUser;
+
+  container.innerHTML = "";
+  let total = 0;
+
+  if (!user) {
+    container.innerHTML = "<p>Please login to view cart 🔒</p>";
+    totalBox.innerText = "Total: ₹0";
+    return;
+  }
+
+  db.collection("carts").doc(user.uid).get().then(doc => {
+
+    let cart = doc.exists ? doc.data().items || [] : [];
+
+    if (cart.length === 0) {
+      container.innerHTML = "<p>Cart is empty 🛒</p>";
+      totalBox.innerText = "Total: ₹0";
+      return;
+    }
+
+    cart.forEach(item => {
+
+      total += item.price * item.quantity;
+
+      container.innerHTML += `
+        <div class="cart-item">
+          <img src="${item.image}">
+          <div class="item-info">
+            <h4>${item.name}</h4>
+            <p>₹${item.price} x ${item.quantity}</p>
+          </div>
+        </div>
+      `;
+    });
+
+    totalBox.innerText = "Total: ₹" + total;
+  });
+}
+
 </script>
+<br><br><br><br>
 <footer class="footer">
 
   <div class="footer-top">
